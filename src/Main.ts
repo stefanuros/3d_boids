@@ -21,6 +21,7 @@ import * as Stats from 'stats.js';
 import { Camera } from './Camera';
 
 import * as bluePlaneGLTF from '../assets/aviao_low_poly_alt/scene.gltf';
+import { Boid } from './Boid';
 
 export class Main {
   private canvas: HTMLCanvasElement;
@@ -31,6 +32,10 @@ export class Main {
   private camera: Camera;
 
   private stats: Stats;
+
+  private model: AssetContainer;
+
+  private boids: Boid[] = [];
 
   constructor() {
     console.log("Starting setup");
@@ -44,7 +49,7 @@ export class Main {
 
     this.showWorldAxis(100);
 
-    this.loadGltf(bluePlaneGLTF);
+    this.createBoids();
 
     console.log("Finished setup. Starting render loop");
   }
@@ -70,29 +75,35 @@ export class Main {
     document.body.appendChild(this.stats.dom);
   }
 
+  async createBoids() {
+    await this.loadGltf(bluePlaneGLTF);
+
+    const numBoids = 3;
+
+    for(let i = 0; i < numBoids; i++) {
+      this.boids.push(
+        new Boid(
+          this.model.instantiateModelsToScene(), 
+          new Vector3(-7 + (i*7), 0, 7 + (i*-7))
+        )
+      )
+    }
+  }
+
   private render() {
     this.stats.begin();
+
+    for(let i = 0; i < this.boids.length; i++) {
+      this.boids[i].update();
+    }
+
     this.scene.render()
     this.stats.end();
   }
 
   // Animation duplicating playground here: https://www.babylonjs-playground.com/#S7E00P
   private async loadGltf(gltf: any) {
-    const planeModel = await SceneLoader.LoadAssetContainerAsync('/', gltf, this.scene);
-
-    const plane1 = planeModel.instantiateModelsToScene();
-    plane1.animationGroups[0].start(true);
-    plane1.rootNodes[0].position = new Vector3();
-    plane1.rootNodes[0].addRotation(0, Math.PI/4, 0);
-
-    const plane2 = planeModel.instantiateModelsToScene();
-    plane2.animationGroups[0].start(true);
-    plane2.rootNodes[0].position = new Vector3(0, 0, 10);
-    plane2.rootNodes[0].addRotation(0, Math.PI/2, 0);
-
-    const plane3 = planeModel.instantiateModelsToScene();
-    plane3.animationGroups[0].start(true);
-    plane3.rootNodes[0].position = new Vector3(10, 0, 0);
+    this.model = await SceneLoader.LoadAssetContainerAsync('/', gltf, this.scene);
   }
 
   private showWorldAxis(size: number) {

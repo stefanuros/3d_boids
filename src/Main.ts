@@ -2,8 +2,7 @@ import {
   Engine, 
   SceneLoader, 
   HemisphericLight, 
-  Vector3, 
-  ArcRotateCamera, 
+  Vector3,
   Scene, 
   DynamicTexture,
   StandardMaterial,
@@ -11,8 +10,6 @@ import {
   Color3,
   Light,
   AssetContainer,
-  ActionManager,
-  ExecuteCodeAction,
   UniversalCamera
 } from 'babylonjs';
 import 'babylonjs-loaders';
@@ -20,9 +17,10 @@ import 'babylonjs-loaders';
 import * as Stats from 'stats.js';
 
 import { Camera } from './Camera';
+import { Boid } from './Boid';
 
 import * as bluePlaneGLTF from '../assets/aviao_low_poly_alt/scene.gltf';
-import { Boid } from './Boid';
+import * as config from './config.json';
 
 export class Main {
   private canvas: HTMLCanvasElement;
@@ -44,7 +42,7 @@ export class Main {
     this.canvas = <HTMLCanvasElement> document.getElementById('canvas');
     this.initEngine();
     this.scene = new Scene(this.engine);
-    this.light = new HemisphericLight("HemiLight", new Vector3(1, 1, 1), this.scene);
+    this.initLight();
     this.initCamera();
     this.initStats();
 
@@ -62,9 +60,19 @@ export class Main {
     // Instruct the engine to resize when the window does.
     window.addEventListener('resize', () => this.engine.resize());
   }
+
+  private initLight() {
+    const lightDirection = new Vector3(
+      config.sceneLight.x,
+      config.sceneLight.y,
+      config.sceneLight.z
+    );
+
+    this.light = new HemisphericLight(config.sceneLight.name, lightDirection, this.scene);
+  }
   
   private initCamera() {
-    this.camera = new Camera(new UniversalCamera("UniversalCam", new Vector3(), this.scene));
+    this.camera = new Camera(new UniversalCamera(config.playerCam.name, new Vector3(), this.scene));
     this.camera.getCamera().attachControl(this.canvas, false);
     this.camera.initHandleMovement();
 
@@ -76,14 +84,14 @@ export class Main {
 
   private initStats() {
     this.stats = new Stats();
-    this.stats.showPanel(0);
+    this.stats.showPanel(config.defaultStatsDisplay);
     document.body.appendChild(this.stats.dom);
   }
 
   async createBoids() {
     await this.loadGltf(bluePlaneGLTF);
 
-    const numBoids = 3;
+    const numBoids = config.boids.amount;
 
     for(let i = 0; i < numBoids; i++) {
       this.boids.push(

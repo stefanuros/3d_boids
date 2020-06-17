@@ -7,7 +7,8 @@
     "target": "es5",
     "module": "commonjs",
     "allowJs": true,
-    "types" : ["babylonjs", "babylonjs-loaders"]
+    "types" : ["babylonjs", "babylonjs-loaders"],
+    "resolveJsonModule": true
   },
   "exclude": [
     "node_modules"

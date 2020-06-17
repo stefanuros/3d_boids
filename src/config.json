@@ -1,0 +1,15 @@
+{
+  "defaultStatsDisplay": 0,
+  "boids": {
+    "amount": 3
+  },
+  "sceneLight": {
+    "name": "AmbientLight",
+    "x": 1,
+    "y": 1,
+    "z": 1
+  },
+  "playerCam": {
+    "name": "PlayerCam"
+  }
+}

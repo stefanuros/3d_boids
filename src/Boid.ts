@@ -22,7 +22,7 @@ export class Boid {
   }
 
   update() {
-      this.updateRotationAndPosition();
+    this.updateRotationAndPosition();
   }
 
   // Temp function just to tyry out moving side to side

@@ -1,7 +1,5 @@
 import { 
-  Vector3, 
-  Camera as BabylonCamera,
-  Scene,
+  Vector3,
   UniversalCamera
 } from "babylonjs";
 

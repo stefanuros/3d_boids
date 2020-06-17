@@ -44,7 +44,7 @@ export class Main {
     this.canvas = <HTMLCanvasElement> document.getElementById('canvas');
     this.initEngine();
     this.scene = new Scene(this.engine);
-    this.light = new HemisphericLight("HemiLight", new Vector3(0, 1, 0), this.scene);
+    this.light = new HemisphericLight("HemiLight", new Vector3(1, 1, 1), this.scene);
     this.initCamera();
     this.initStats();
 

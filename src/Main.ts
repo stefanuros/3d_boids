@@ -10,7 +10,9 @@ import {
   Mesh,
   Color3,
   Light,
-  AbstractMesh
+  AbstractMesh,
+  AnimationGroup,
+  AssetContainer
 } from 'babylonjs';
 import 'babylonjs-loaders';
 
@@ -74,16 +76,23 @@ export class Main {
     this.stats.end();
   }
 
+  // Animation duplicating playground here: https://www.babylonjs-playground.com/#S7E00P
   private async loadGltf(gltf: any) {
-    const model = await SceneLoader.ImportMeshAsync(null, '/', gltf, this.scene);
-    const model2 = model.meshes[0].clone("clone", null);
-    // const model2 = {
-    //   meshes: model.meshes[0].clone("clone", null)
-    // }
-    model2.position = new Vector3(0, 0, 7);
-    model2.beginAnimation("model2animation", true);
-    model.meshes[0].rotation = new Vector3(0, Math.PI + Math.PI/4, 0);
-    return model;
+    const planeModel = await SceneLoader.LoadAssetContainerAsync('/', gltf, this.scene);
+
+    const plane1 = planeModel.instantiateModelsToScene();
+    plane1.animationGroups[0].start(true);
+    plane1.rootNodes[0].position = new Vector3();
+    plane1.rootNodes[0].addRotation(0, Math.PI/4, 0);
+
+    const plane2 = planeModel.instantiateModelsToScene();
+    plane2.animationGroups[0].start(true);
+    plane2.rootNodes[0].position = new Vector3(0, 0, 10);
+    plane2.rootNodes[0].addRotation(0, Math.PI/2, 0);
+
+    const plane3 = planeModel.instantiateModelsToScene();
+    plane3.animationGroups[0].start(true);
+    plane3.rootNodes[0].position = new Vector3(10, 0, 0);
   }
 
   private showWorldAxis(size: number) {

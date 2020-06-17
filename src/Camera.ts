@@ -11,7 +11,7 @@ export class Camera {
 
   constructor(camera: BabylonCamera) {
     this.camera = camera;
-    this.position = new Vector3(15, 15, 15);
+    this.position = new Vector3(20, 15, 20);
     this.camera.position = this.position;
   }
 

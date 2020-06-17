@@ -53,9 +53,7 @@ export class Main {
     this.createBoids();
 
     console.log("Finished setup. Starting render loop");
-  }
 
-  startRender() {
     this.engine.runRenderLoop(() => this.render());
   }
 

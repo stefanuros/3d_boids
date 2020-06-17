@@ -10,13 +10,15 @@ import {
   Mesh,
   Color3,
   Light,
-  Camera
+  AbstractMesh
 } from 'babylonjs';
 import 'babylonjs-loaders';
 
 import * as Stats from 'stats.js';
 
-import * as bluePlaneGLTF from '../assets/aviao_low_poly/scene.gltf';
+import { Camera } from './Camera';
+
+import * as bluePlaneGLTF from '../assets/aviao_low_poly_alt/scene.gltf';
 
 export class Main {
   private canvas: HTMLCanvasElement;
@@ -56,9 +58,8 @@ export class Main {
   }
   
   private initCamera() {
-    this.camera = new ArcRotateCamera("MainCamera", 0, 1, 220, new Vector3(0, 0, 0), this.scene);
-    this.camera.attachControl(this.canvas, false);
-    this.camera.position = new Vector3(15, 15, 15);
+    this.camera = new Camera(new ArcRotateCamera("MainCamera", 0, 1, 220, new Vector3(0, 0, 0), this.scene));
+    this.camera.getCamera().attachControl(this.canvas, false);
   }
 
   private initStats() {
@@ -75,6 +76,12 @@ export class Main {
 
   private async loadGltf(gltf: any) {
     const model = await SceneLoader.ImportMeshAsync(null, '/', gltf, this.scene);
+    const model2 = model.meshes[0].clone("clone", null);
+    // const model2 = {
+    //   meshes: model.meshes[0].clone("clone", null)
+    // }
+    model2.position = new Vector3(0, 0, 7);
+    model2.beginAnimation("model2animation", true);
     model.meshes[0].rotation = new Vector3(0, Math.PI + Math.PI/4, 0);
     return model;
   }

@@ -10,9 +10,10 @@ import {
   Mesh,
   Color3,
   Light,
-  AbstractMesh,
-  AnimationGroup,
-  AssetContainer
+  AssetContainer,
+  ActionManager,
+  ExecuteCodeAction,
+  UniversalCamera
 } from 'babylonjs';
 import 'babylonjs-loaders';
 
@@ -65,8 +66,14 @@ export class Main {
   }
   
   private initCamera() {
-    this.camera = new Camera(new ArcRotateCamera("MainCamera", 0, 1, 220, new Vector3(0, 0, 0), this.scene));
+    this.camera = new Camera(new UniversalCamera("UniversalCam", new Vector3(), this.scene));
     this.camera.getCamera().attachControl(this.canvas, false);
+    this.camera.initHandleMovement();
+
+    // Enter pointer lock. Pressing `esc` escapes pointer lock
+    this.scene.onPointerDown = evt => {
+      this.engine.enterPointerlock();
+    }
   }
 
   private initStats() {
@@ -86,7 +93,7 @@ export class Main {
           this.model.instantiateModelsToScene(), 
           new Vector3(-7 + (i*7), 0, 7 + (i*-7))
         )
-      )
+      );
     }
   }
 
@@ -97,7 +104,7 @@ export class Main {
       this.boids[i].update();
     }
 
-    this.scene.render()
+    this.scene.render();
     this.stats.end();
   }
 

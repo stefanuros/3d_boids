@@ -1,7 +1,7 @@
 {
   "defaultStatsDisplay": 0,
   "boids": {
-    "amount": 3
+    "amount": 1
   },
   "sceneLight": {
     "name": "AmbientLight",
@@ -11,5 +11,10 @@
   },
   "playerCam": {
     "name": "PlayerCam"
+  },
+  "world": {
+    "size": 300,
+    "threshold": 10,
+    "wallForceStrength": 1
   }
 }

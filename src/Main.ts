@@ -46,6 +46,8 @@ export class Main {
     this.initCamera();
     this.initStats();
 
+    this.createBorder();
+
     this.showWorldAxis(100);
 
     this.createBoids();
@@ -88,6 +90,17 @@ export class Main {
     document.body.appendChild(this.stats.dom);
   }
 
+  private createBorder() {
+    let materialforbox = new StandardMaterial("WorldBorderMaterial", this.scene);
+    
+    let box = Mesh.CreateBox("WorldBorder", config.world.size, this.scene, false, Mesh.DOUBLESIDE);	
+    box.position.addInPlace(new Vector3(config.world.size/2, config.world.size/2, config.world.size/2));
+    box.material = materialforbox;
+    box.enableEdgesRendering();
+    box.edgesWidth = 4;
+    materialforbox.alpha = 0.3;
+  }
+
   async createBoids() {
     await this.loadGltf(bluePlaneGLTF);
 
@@ -96,8 +109,7 @@ export class Main {
     for(let i = 0; i < numBoids; i++) {
       this.boids.push(
         new Boid(
-          this.model.instantiateModelsToScene(), 
-          new Vector3(-7 + (i*7), 0, 7 + (i*-7))
+          this.model.instantiateModelsToScene()
         )
       );
     }

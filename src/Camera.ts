@@ -9,7 +9,7 @@ export class Camera {
 
   constructor(camera: UniversalCamera) {
     this.camera = camera;
-    this.position = new Vector3(20, 15, 20);
+    this.position = new Vector3(350, 350, 350);
     this.camera.position = this.position;
     this.camera.setTarget(new Vector3(0, 0, 0));
   }

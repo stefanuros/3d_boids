@@ -1,7 +1,11 @@
 {
   "defaultStatsDisplay": 0,
   "boids": {
-    "amount": 1
+    "amount": 100,
+    "maxSpeed": 0.1,
+    "movementTowardsCenter": 0.01,
+    "separationDistance": 5,
+    "alignmentConstant": 0.125
   },
   "sceneLight": {
     "name": "AmbientLight",

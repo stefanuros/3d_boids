@@ -29,9 +29,9 @@ export class Boid {
     );
     // Start with a random velocity
     this.velocity = new Vector3(
-      (Math.random() * 2) - 1, 
-      (Math.random() * 2) - 1, 
-      (Math.random() * 2) - 1
+      (Math.random() * 10) - 1, 
+      (Math.random() * 10) - 1, 
+      (Math.random() * 10) - 1
     );
 
     this.initModel();
@@ -50,9 +50,9 @@ export class Boid {
 
   private updatePosition(): void {
     this.velocity
-      .addInPlace(this.calcCohesion())
-      .addInPlace(this.calcSeparation())
-      .addInPlace(this.calcAlignment())
+      // .addInPlace(this.calcCohesion())
+      // .addInPlace(this.calcSeparation())
+      // .addInPlace(this.calcAlignment())
       .addInPlace(this.calcWallForce());
 
     // Check if its above the speed limit
@@ -63,8 +63,6 @@ export class Boid {
     }
 
     this.position.addInPlace(this.velocity);
-
-    // this.hitWall();
   }
 
 
@@ -82,25 +80,14 @@ export class Boid {
       this.velocity.scaleInPlace(1/this.velocity.length());
       this.velocity.scaleInPlace(this.maxSpeed);
     }
-
-    // Temp function until I get the boids to move away from the wall
-    this.hitWall();
   }
 
   private updateSteer(): Vector3 {
-    let desired = new Vector3();
-
-    // Move the boid away from the wall
-    // desired.addInPlace(this.calcWallForce());
-
-    // Apply boid flocking rules
-    desired.addInPlace(this.calcCohesion());
-    desired.addInPlace(this.calcSeparation());
-    desired.addInPlace(this.calcAlignment());
-
-    // Limit the max speed
-    // desired.scaleInPlace(this.maxSpeed);
-    // desired.normalizeFromLength(desired.length()).scale(this.maxSpeed);
+    let desired = new Vector3()
+      .addInPlace(this.calcCohesion())
+      .addInPlace(this.calcSeparation())
+      .addInPlace(this.calcAlignment())
+      .addInPlace(this.calcWallForce());
 
     // Apply the desired force
     return desired.subtractInPlace(this.velocity);
@@ -112,12 +99,13 @@ export class Boid {
     // Vector pc
     let centerOfMass = new Vector3();
     let movementTowardsCenter = config.boids.movementTowardsCenter;
+    const viewDistance = config.boids.viewDistance;
 
     // FOR EACH BOID b
     for(let i = 0; i < Boid.boids.length; i++) {
       let b = Boid.boids[i];
       // IF b != this THEN
-      if(b !== this) {
+      if(b !== this && this.position.subtract(b.position).length() < viewDistance) {
         // pc = pc + b.position
         centerOfMass.addInPlace(b.position);
       }
@@ -159,12 +147,13 @@ export class Boid {
     let perceivedVelocity = new Vector3();
 
     const alignmentConstant = config.boids.alignmentConstant;
+    const viewDistance = config.boids.viewDistance;
 
     // FOR EACH BOID b
     for(let i = 0; i < Boid.boids.length; i++) {
       let b = Boid.boids[i];
       // 	IF b != this THEN
-      if(b !== this) {
+      if(b !== this && this.position.subtract(b.position).length() < viewDistance) {
         // 		pvJ = pvJ + b.velocity
         perceivedVelocity.addInPlace(b.velocity);
       }
@@ -176,33 +165,7 @@ export class Boid {
     return perceivedVelocity.subtract(this.velocity).scale(1/alignmentConstant);
   }
 
-  private hitWall(): void {
-    const border = config.world.size;
-
-    const { x, y, z } = this.position;
-
-    if (x <= 0) {
-      this.position.x = border;
-    }
-    if (x >= border) {
-      this.position.x = 0;
-    }
-    if (y <= 0) {
-      this.position.y = border;
-    }
-    if (y >= border) {
-      this.position.y = 0;
-    }
-    if (z <= 0) {
-      this.position.z = border;
-    }
-    if (z >= border) {
-      this.position.z = 0;
-    }
-  }
-
   private calcWallForce(): Vector3 {
-    return new Vector3(0,0,0);
     const threshold = config.world.threshold;
     const border = config.world.size;
     const wallForceConstant = config.boids.wallForceConstant;

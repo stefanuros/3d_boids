@@ -2,11 +2,12 @@
   "defaultStatsDisplay": 0,
   "boids": {
     "amount": 100,
-    "maxSpeed": 2,
-    "movementTowardsCenter": 100,
+    "maxSpeed": 1,
+    "movementTowardsCenter": 1000,
     "separationDistance": 15,
     "alignmentConstant": 8,
-    "wallForceConstant": 10
+    "wallForceConstant": 0.025,
+    "viewDistance": 35
   },
   "sceneLight": {
     "name": "AmbientLight",
@@ -19,7 +20,7 @@
   },
   "world": {
     "size": 300,
-    "threshold": 10,
+    "threshold": 25,
     "wallForceStrength": 1
   }
 }

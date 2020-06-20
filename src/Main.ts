@@ -97,7 +97,7 @@ export class Main {
     box.position.addInPlace(new Vector3(config.world.size/2, config.world.size/2, config.world.size/2));
     box.material = materialforbox;
     box.enableEdgesRendering();
-    box.edgesWidth = 4;
+    box.edgesWidth = 20;
     materialforbox.alpha = 0.3;
   }
 

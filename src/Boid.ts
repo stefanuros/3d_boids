@@ -38,7 +38,11 @@ export class Boid {
   }
 
   private initModel() {
-    this.model.animationGroups[0].start(true);
+    try {
+      this.model.animationGroups[0].start(true);
+    }
+    catch(e) {}
+    
     this.model.rootNodes[0].position = this.position;
   }
 
@@ -50,9 +54,9 @@ export class Boid {
 
   private updatePosition(): void {
     this.velocity
-      // .addInPlace(this.calcCohesion())
-      // .addInPlace(this.calcSeparation())
-      // .addInPlace(this.calcAlignment())
+      .addInPlace(this.calcCohesion())
+      .addInPlace(this.calcSeparation())
+      .addInPlace(this.calcAlignment())
       .addInPlace(this.calcWallForce());
 
     // Check if its above the speed limit
@@ -98,23 +102,26 @@ export class Boid {
   private calcCohesion(): Vector3 {
     // Vector pc
     let centerOfMass = new Vector3();
-    let movementTowardsCenter = config.boids.movementTowardsCenter;
+    let cohesionConstant = config.boids.cohesionConstant;
     const viewDistance = config.boids.viewDistance;
+
+    let numBoids = 0;
 
     // FOR EACH BOID b
     for(let i = 0; i < Boid.boids.length; i++) {
       let b = Boid.boids[i];
       // IF b != this THEN
-      if(b !== this && this.position.subtract(b.position).length() < viewDistance) {
+      if(this.position.subtract(b.position).length() < viewDistance) {
+        numBoids++;
         // pc = pc + b.position
         centerOfMass.addInPlace(b.position);
       }
     }
 
     // pc = pc / N-1
-    centerOfMass.scaleInPlace(1/(Boid.boids.length-1));
+    centerOfMass.scaleInPlace((numBoids !== 0 ? 1/numBoids : 0));
     // RETURN (pc - this.position) / 100
-    return centerOfMass.subtract(this.position).scale(1/movementTowardsCenter);
+    return centerOfMass.subtract(this.position).scale(1/cohesionConstant);
   }
 
   // Rule 2
@@ -124,6 +131,7 @@ export class Boid {
     let c = new Vector3();
 
     const separationDistance = config.boids.separationDistance;
+    const separationForce = config.boids.separationForce;
 
     // FOR EACH BOID b
     for(let i = 0; i < Boid.boids.length; i++) {
@@ -138,7 +146,7 @@ export class Boid {
       }
     }
 
-    return c;
+    return c.scale(1/separationForce);
   }
 
   // Rule 3
@@ -148,18 +156,20 @@ export class Boid {
 
     const alignmentConstant = config.boids.alignmentConstant;
     const viewDistance = config.boids.viewDistance;
+    let numBoids = 0;
 
     // FOR EACH BOID b
     for(let i = 0; i < Boid.boids.length; i++) {
       let b = Boid.boids[i];
       // 	IF b != this THEN
-      if(b !== this && this.position.subtract(b.position).length() < viewDistance) {
+      if(this.position.subtract(b.position).length() < viewDistance) {
+        numBoids++;
         // 		pvJ = pvJ + b.velocity
         perceivedVelocity.addInPlace(b.velocity);
       }
     }
     // pvJ = pvJ / N-1
-    perceivedVelocity.scaleInPlace(1/(Boid.boids.length-1));
+    perceivedVelocity.scaleInPlace((numBoids !== 0 ? 1/numBoids : 0));
 
     // RETURN (pvJ - this.velocity) / 8
     return perceivedVelocity.subtract(this.velocity).scale(1/alignmentConstant);

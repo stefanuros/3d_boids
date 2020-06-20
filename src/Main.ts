@@ -10,7 +10,8 @@ import {
   Color3,
   Light,
   AssetContainer,
-  UniversalCamera
+  UniversalCamera,
+  MeshBuilder
 } from 'babylonjs';
 import 'babylonjs-loaders';
 
@@ -128,7 +129,13 @@ export class Main {
 
   // Animation duplicating playground here: https://www.babylonjs-playground.com/#S7E00P
   private async loadGltf(gltf: any) {
-    this.model = await SceneLoader.LoadAssetContainerAsync('/', gltf, this.scene);
+    if(config.boids.model) {
+      this.model = await SceneLoader.LoadAssetContainerAsync('/', gltf, this.scene);
+    }
+    else {
+      this.model = new AssetContainer(this.scene);
+      this.model.meshes.push(MeshBuilder.CreateSphere("cone", {diameter: 2}, this.scene));
+    }
   }
 
   private showWorldAxis(size: number) {

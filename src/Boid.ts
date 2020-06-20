@@ -52,13 +52,19 @@ export class Boid {
     this.velocity
       .addInPlace(this.calcCohesion())
       .addInPlace(this.calcSeparation())
-      .addInPlace(this.calcAlignment());
+      .addInPlace(this.calcAlignment())
+      .addInPlace(this.calcWallForce());
 
-    // this.velocity.scaleInPlace(this.maxSpeed);
+    // Check if its above the speed limit
+    if(this.velocity.length() > this.maxSpeed) {
+      // Make a unit vector
+      this.velocity.scaleInPlace(1/this.velocity.length());
+      this.velocity.scaleInPlace(this.maxSpeed);
+    }
 
     this.position.addInPlace(this.velocity);
 
-    this.hitWall();
+    // this.hitWall();
   }
 
 
@@ -69,6 +75,13 @@ export class Boid {
     // Apply the acceleration to calculate the new position
     this.position.addInPlace(this.velocity);
     this.velocity.addInPlace(steer);
+
+    // Check if its above the speed limit
+    if(this.velocity.length() > this.maxSpeed) {
+      // Make a unit vector
+      this.velocity.scaleInPlace(1/this.velocity.length());
+      this.velocity.scaleInPlace(this.maxSpeed);
+    }
 
     // Temp function until I get the boids to move away from the wall
     this.hitWall();
@@ -111,9 +124,9 @@ export class Boid {
     }
 
     // pc = pc / N-1
-    centerOfMass.scaleInPlace(1/Boid.boids.length)
+    centerOfMass.scaleInPlace(1/(Boid.boids.length-1));
     // RETURN (pc - this.position) / 100
-    return centerOfMass.subtract(this.position).scale(movementTowardsCenter);
+    return centerOfMass.subtract(this.position).scale(1/movementTowardsCenter);
   }
 
   // Rule 2
@@ -157,10 +170,10 @@ export class Boid {
       }
     }
     // pvJ = pvJ / N-1
-    perceivedVelocity.scaleInPlace(1/Boid.boids.length);
+    perceivedVelocity.scaleInPlace(1/(Boid.boids.length-1));
 
     // RETURN (pvJ - this.velocity) / 8
-    return perceivedVelocity.subtract(this.velocity).scale(alignmentConstant);
+    return perceivedVelocity.subtract(this.velocity).scale(1/alignmentConstant);
   }
 
   private hitWall(): void {
@@ -192,6 +205,7 @@ export class Boid {
     return new Vector3(0,0,0);
     const threshold = config.world.threshold;
     const border = config.world.size;
+    const wallForceConstant = config.boids.wallForceConstant;
 
     const { x, y, z } = this.position;
 
@@ -199,30 +213,29 @@ export class Boid {
 
     // x = 0
     if (x <= 0 + threshold) {
-      wallForce.addInPlace(new Vector3(threshold - x, 0, 0));
+      wallForce.addInPlace(new Vector3(wallForceConstant, 0, 0));
     }
     // x = border
     if (x >= border - threshold) {
-      wallForce.addInPlace(new Vector3(-(threshold - (border - x)), 0, 0));
+      wallForce.addInPlace(new Vector3(-wallForceConstant, 0, 0));
     }
     // y = 0
     if (y <= 0 + threshold) {
-      wallForce.addInPlace(new Vector3(0, threshold - y, 0));
+      wallForce.addInPlace(new Vector3(0, wallForceConstant, 0));
     }
     // y = border
     if (y >= border - threshold) {
-      wallForce.addInPlace(new Vector3(0, -(threshold - (border - y)), 0));
+      wallForce.addInPlace(new Vector3(0, -wallForceConstant, 0));
     }
     // z = 0
     if (z <= 0 + threshold) {
-      wallForce.addInPlace(new Vector3(0, 0, threshold - z));
+      wallForce.addInPlace(new Vector3(0, 0, wallForceConstant));
     }
     // z = border
     if (z >= border - threshold) {
-      wallForce.addInPlace(new Vector3(0, 0, -(threshold - (border - z))));
+      wallForce.addInPlace(new Vector3(0, 0, -wallForceConstant));
     }
 
-    wallForce.scaleInPlace(config.world.wallForceStrength);
     return wallForce;
   }
 }

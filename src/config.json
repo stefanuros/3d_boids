@@ -1,15 +1,16 @@
 {
   "defaultStatsDisplay": 0,
   "boids": {
-    "model": false,
-    "amount": 300,
+    "amount": 50,
     "maxSpeed": 1,
-    "cohesionConstant": 100,
+    "minSpeed": 0.1,
+    "cohesionMultiplier": 0.01,
     "separationDistance": 15,
-    "separationForce": 100,
-    "alignmentConstant": 8,
+    "separationMultiplier": 0.01,
+    "alignmentMultiplier": 0.125,
     "wallForceConstant": 0.125,
-    "viewDistance": 20
+    "viewDistance": 20,
+    "steerMultiplier": 0.25
   },
   "sceneLight": {
     "name": "AmbientLight",

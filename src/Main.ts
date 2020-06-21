@@ -37,8 +37,12 @@ export class Main {
 
   private boids: Boid[] = [];
 
-  constructor() {
+  private usePlane: boolean;
+
+  constructor(usePlane: boolean = false) {
     console.log("Starting setup");
+
+    this.usePlane = usePlane;
 
     this.canvas = <HTMLCanvasElement> document.getElementById('canvas');
     this.initEngine();
@@ -105,7 +109,7 @@ export class Main {
   async createBoids() {
     await this.loadGltf(bluePlaneGLTF);
 
-    const numBoids = config.boids.amount;
+    const numBoids = config.boids.amount * (this.usePlane ? 1 : 6);
 
     for(let i = 0; i < numBoids; i++) {
       this.boids.push(
@@ -114,6 +118,12 @@ export class Main {
         )
       );
     }
+  }
+
+  destroy() {
+    this.scene.dispose();
+    this.engine.dispose();
+    Boid.boids = [];
   }
 
   private render() {
@@ -129,7 +139,7 @@ export class Main {
 
   // Animation duplicating playground here: https://www.babylonjs-playground.com/#S7E00P
   private async loadGltf(gltf: any) {
-    if(config.boids.model) {
+    if(this.usePlane) {
       this.model = await SceneLoader.LoadAssetContainerAsync('/', gltf, this.scene);
     }
     else {

@@ -12,6 +12,7 @@ export class Boid {
   private model: InstantiatedEntries;
 
   private maxSpeed: number;
+  private minSpeed: number;
   private position: Vector3;
   private velocity: Vector3;
 
@@ -21,6 +22,7 @@ export class Boid {
 
     this.model = model;
     this.maxSpeed = config.boids.maxSpeed;
+    this.minSpeed = config.boids.minSpeed;
     // Start with a random position
     this.position = new Vector3(
       Math.random() * (config.world.size - 10),
@@ -42,14 +44,21 @@ export class Boid {
       this.model.animationGroups[0].start(true);
     }
     catch(e) {}
-    
+
     this.model.rootNodes[0].position = this.position;
   }
 
   update() {
     this.updatePosition();
 
+    this.rotateBoid();
     this.model.rootNodes[0].position = this.position;
+  }
+
+  private rotateBoid(): void {
+    this.model.rootNodes[0]
+      .lookAt(this.position.add(this.velocity))
+      .rotate(new Vector3(0, 1, 0), Math.PI);
   }
 
   private updatePosition(): void {
@@ -65,18 +74,22 @@ export class Boid {
       this.velocity.scaleInPlace(1/this.velocity.length());
       this.velocity.scaleInPlace(this.maxSpeed);
     }
+    else if(this.velocity.length() < this.minSpeed) {
+      // Make a unit vector
+      this.velocity.scaleInPlace(1/this.velocity.length());
+      this.velocity.scaleInPlace(this.minSpeed);
+    }
 
     this.position.addInPlace(this.velocity);
   }
 
+  private updatePositionv3(): void {
 
-  private updatePositionv2() :void {
-    // Find the new acceleration
-    const steer = this.updateSteer();
-
-    // Apply the acceleration to calculate the new position
-    this.position.addInPlace(this.velocity);
-    this.velocity.addInPlace(steer);
+    this.velocity
+      .addInPlace(this.calcCohesion())
+      .addInPlace(this.calcSeparation())
+      .addInPlace(this.calcAlignment())
+      .addInPlace(this.calcWallForce());
 
     // Check if its above the speed limit
     if(this.velocity.length() > this.maxSpeed) {
@@ -84,17 +97,41 @@ export class Boid {
       this.velocity.scaleInPlace(1/this.velocity.length());
       this.velocity.scaleInPlace(this.maxSpeed);
     }
+    else if(this.velocity.length() < this.minSpeed) {
+      // Make a unit vector
+      this.velocity.scaleInPlace(1/this.velocity.length());
+      this.velocity.scaleInPlace(this.minSpeed);
+    }
+
+    this.position.addInPlace(this.velocity);
   }
 
-  private updateSteer(): Vector3 {
-    let desired = new Vector3()
+  private updatePositionv2() :void {
+    const desired = new Vector3()
       .addInPlace(this.calcCohesion())
       .addInPlace(this.calcSeparation())
       .addInPlace(this.calcAlignment())
       .addInPlace(this.calcWallForce());
 
-    // Apply the desired force
-    return desired.subtractInPlace(this.velocity);
+    // Find the new acceleration
+    const steer = desired.subtract(this.velocity);
+
+    // Apply the acceleration to calculate the new position
+    this.velocity.addInPlace(steer);
+    
+    // Check if its above the speed limit
+    if(this.velocity.length() > this.maxSpeed) {
+      // Make a unit vector
+      this.velocity.scaleInPlace(1/this.velocity.length());
+      this.velocity.scaleInPlace(this.maxSpeed);
+    }
+    else if(this.velocity.length() < this.minSpeed) {
+      // Make a unit vector
+      this.velocity.scaleInPlace(1/this.velocity.length());
+      this.velocity.scaleInPlace(this.minSpeed);
+    }
+
+    this.position.addInPlace(this.velocity);
   }
 
   // http://www.kfish.org/boids/pseudocode.html
@@ -102,7 +139,7 @@ export class Boid {
   private calcCohesion(): Vector3 {
     // Vector pc
     let centerOfMass = new Vector3();
-    let cohesionConstant = config.boids.cohesionConstant;
+    let cohesionMultiplier = config.boids.cohesionMultiplier;
     const viewDistance = config.boids.viewDistance;
 
     let numBoids = 0;
@@ -121,7 +158,7 @@ export class Boid {
     // pc = pc / N-1
     centerOfMass.scaleInPlace((numBoids !== 0 ? 1/numBoids : 0));
     // RETURN (pc - this.position) / 100
-    return centerOfMass.subtract(this.position).scale(1/cohesionConstant);
+    return centerOfMass.subtract(this.position).scale(cohesionMultiplier);
   }
 
   // Rule 2
@@ -131,7 +168,7 @@ export class Boid {
     let c = new Vector3();
 
     const separationDistance = config.boids.separationDistance;
-    const separationForce = config.boids.separationForce;
+    const separationMultiplier = config.boids.separationMultiplier;
 
     // FOR EACH BOID b
     for(let i = 0; i < Boid.boids.length; i++) {
@@ -146,7 +183,7 @@ export class Boid {
       }
     }
 
-    return c.scale(1/separationForce);
+    return c.scale(separationMultiplier);
   }
 
   // Rule 3
@@ -154,7 +191,7 @@ export class Boid {
     // Vector pvJ
     let perceivedVelocity = new Vector3();
 
-    const alignmentConstant = config.boids.alignmentConstant;
+    const alignmentMultiplier = config.boids.alignmentMultiplier;
     const viewDistance = config.boids.viewDistance;
     let numBoids = 0;
 
@@ -172,7 +209,7 @@ export class Boid {
     perceivedVelocity.scaleInPlace((numBoids !== 0 ? 1/numBoids : 0));
 
     // RETURN (pvJ - this.velocity) / 8
-    return perceivedVelocity.subtract(this.velocity).scale(1/alignmentConstant);
+    return perceivedVelocity.subtract(this.velocity).scale(alignmentMultiplier);
   }
 
   private calcWallForce(): Vector3 {
